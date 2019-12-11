@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -15,6 +19,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using Vepotrack.API.DataModels;
+using Vepotrack.API.Identity;
 using Vepotrack.API.Persistence.Contexts;
 using Vepotrack.API.Repositories;
 using Vepotrack.API.Repositories.Interfaces;
@@ -38,6 +44,7 @@ namespace Vepotrack.API
             // Añadimos autenticación por TOKEN JWT
             var key = Encoding.ASCII.GetBytes(Configuration.GetValue<string>("SecretKey"));
 
+            // Añadimos autenticación por Token en el Bearer por defecto y posibilidad de autenticación por cookie
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -60,9 +67,28 @@ namespace Vepotrack.API
             services.AddDbContext<ApiDbContext>(options => {
                 options.UseInMemoryDatabase("API-Memory");
             });
+            // Añadimos la identidad
+            services.AddIdentity<UserApp, UserRol>()
+                .AddEntityFrameworkStores<ApiDbContext>()
+                .AddDefaultTokenProviders();
+
+            services.AddScoped<IUserClaimsPrincipalFactory<UserApp>, AdditionalUserClaimsPrincipalFactory>();
+
+            services.AddSingleton<IAuthorizationHandler, IsAdminHandler>();
+            services.AddAuthentication();
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("IsAdmin", policy =>
+                {
+                    policy.Requirements.Add(new IsAdminRequirement());
+                });
+            });
 
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserService, UserService>();
+            // Singleton de acceso al contexto
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -75,9 +101,8 @@ namespace Vepotrack.API
             else
             {
                 app.UseHsts();
-            }     
-
-
+            }
+                       
             // Añadimos el log a los request
             app.UseSerilogRequestLogging();
 

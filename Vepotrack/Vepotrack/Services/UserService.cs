@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -19,6 +21,18 @@ namespace Vepotrack.API.Services
     public class UserService : IUserService
     {
         /// <summary>
+        /// Servicio de sesion
+        /// </summary>
+        private readonly SignInManager<UserApp> _signInManager;
+        /// <summary>
+        /// Manager de usuarios
+        /// </summary>
+        private readonly UserManager<UserApp> _userManager;
+        /// <summary>
+        /// Acceso al contexto
+        /// </summary>
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        /// <summary>
         /// Variable donde se establecera el repositorio de usuarios
         /// </summary>
         private readonly IUserRepository _userRepository;
@@ -31,8 +45,16 @@ namespace Vepotrack.API.Services
         /// </summary>
         private readonly ILogger<UserService> _logger;
 
-        public UserService(IConfiguration configuration, IUserRepository userRepository, ILogger<UserService> logger)
+        public UserService(IConfiguration configuration, 
+            UserManager<UserApp> userManager, 
+            SignInManager<UserApp> signInManager, 
+            IUserRepository userRepository,
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<UserService> logger)
         {
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _httpContextAccessor = httpContextAccessor;
             _userRepository = userRepository;
             _configuration = configuration;
             _logger = logger;
@@ -42,48 +64,23 @@ namespace Vepotrack.API.Services
         {
             try
             {
-                User user = await _userRepository.GetUser(loginInfo.Username);
-                if (user == null)
+                var result = await _signInManager.PasswordSignInAsync(loginInfo.Username, loginInfo.Password, isPersistent: false, lockoutOnFailure: false);
+
+                if (!result.Succeeded)
                     return String.Empty;
 
-                var frontHash = _configuration.GetValue<string>("FrontHash") ?? String.Empty;
+                //var frontHash = _configuration.GetValue<string>("FrontHash") ?? String.Empty;
 
-                if (user.Hash != TextUtils.SHA512($"{frontHash}{loginInfo.Password}{user.BackHash}"))
-                    return String.Empty;
+                //if (user.Hash != TextUtils.SHA512($"{frontHash}{loginInfo.Password}{user.BackHash}"))
+                //    return String.Empty;
+
+                var user = await _userManager.FindByNameAsync(loginInfo.Username);
 
                 // Actualizmos el último login
                 user.LastLogin = DateTime.Now;
-                await _userRepository.UpdateUser(user);
+                await _userRepository.UpdateUser(user);               
 
-                // Leemos el secret_key desde nuestro appseting
-                var secretKey = _configuration.GetValue<string>("SecretKey");
-                var key = Encoding.UTF8.GetBytes(secretKey);
-
-                // Creamos los claims (pertenencias, características) del usuario
-                var claims = new[]
-                {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
-            };
-
-                var tokenDescriptor = new SecurityTokenDescriptor
-                {
-                    Subject = new ClaimsIdentity(claims),
-#if DEBUG
-                    // Nuestro token va a durar un minuto, en Release durará 1 día
-                    Expires = DateTime.UtcNow.AddMinutes(1),
-#else
-                // Nuestro token va a durar un día
-                Expires = DateTime.UtcNow.AddDays(1),
-#endif
-                    // Credenciales para generar el token usando nuestro secretykey y el algoritmo hash 256
-                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-                };
-
-
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var createdToken = tokenHandler.CreateToken(tokenDescriptor);
-
-                return tokenHandler.WriteToken(createdToken);
+                return GetToken(user);
             }catch(Exception ex)
             {
                 _logger.LogError(ex, "Fallo en authenticación: {LoginInfo}", loginInfo);
@@ -92,30 +89,70 @@ namespace Vepotrack.API.Services
             return String.Empty;
         }
 
+        public async Task<String> RefreshToken()
+        {
+            // Buscamos el usuario por nombre
+            var user = await _userManager.FindByNameAsync(
+               _httpContextAccessor.HttpContext.User.Identity.Name ??
+               _httpContextAccessor.HttpContext.User.Claims.Where(c => c.Properties.ContainsKey("unique_name")).Select(c => c.Value).FirstOrDefault()
+               );
+            return GetToken(user);
+        }
+
         public async Task<UserAPI> GetAPIUser(string username)
         {
-            User user = await _userRepository.GetUser(username);
-            return FromUser(user);
+            var user = await _userManager.FindByNameAsync(username);
+            return user?.ToUserAPI();
         }
 
         public async Task<IEnumerable<UserAPI>> GetAPIUsers()
         {
-            // Obtenemos el listado de usuarios
-            IEnumerable<User> lstUsers = await _userRepository.GetUsers();
             // Convertimos a UserAPI
-            return lstUsers.Select(x => FromUser(x)).ToList();
+            return _userManager.Users.Select(x => x.ToUserAPI()).ToList();
         }
 
-        protected static UserAPI FromUser(User user)
+        /// <summary>
+        /// Funcion para generar el token
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        private String GetToken(UserApp user)
         {
-            if (user == null)
-                return null;
-            return new UserAPI()
+            // Leemos el secret_key desde nuestro appseting
+            var secretKey = _configuration.GetValue<string>("SecretKey");
+            var key = Encoding.UTF8.GetBytes(secretKey);
+
+            var utcNow = DateTime.UtcNow;
+
+            // Creamos los claims (pertenencias, características) del usuario
+            var claims = new[]
             {
-                Id = user.Id.ToString(),
-                Username = user.Username,
-                LastLogin = user.LastLogin
+                    new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                    new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim(JwtRegisteredClaimNames.Iat, utcNow.ToString())
+                };
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                NotBefore = utcNow,
+#if DEBUG
+                    // Nuestro token va a durar un minuto, en Release durará 1 día
+                    Expires = utcNow.AddMinutes(1),
+#else
+                // Nuestro token va a durar un día
+                Expires = utcNow.AddDays(1),
+#endif
+                // Credenciales para generar el token usando nuestro secretykey y el algoritmo hash 256
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var createdToken = tokenHandler.CreateToken(tokenDescriptor);
+            // Devolvemos el token generado
+            return tokenHandler.WriteToken(createdToken);
         }
+        
     }
 }

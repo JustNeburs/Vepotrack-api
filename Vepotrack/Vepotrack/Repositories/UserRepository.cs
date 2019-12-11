@@ -15,40 +15,39 @@ namespace Vepotrack.API.Repositories
         {
         }
 
-        public async Task<User> AddUser(User user)
+        public async Task<UserApp> AddUser(UserApp user)
         {
             var ret = await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
             return ret.Entity;
         }
 
-        public async Task<User> GetUser(Guid userId)
+        public async Task<UserApp> GetUser(Guid userId)
         {
             return await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
         }
 
-        public async Task<User> GetUser(string username)
+        public async Task<UserApp> GetUser(string username)
         {
-            return await _context.Users.FirstOrDefaultAsync(x => x.Username == username);
+            return await _context.Users.FirstOrDefaultAsync(x => x.UserName == username);
         }
 
-        public async Task<IEnumerable<UserPermission>> GetUserPermission(Guid userId)
+        public async Task<IEnumerable<UserRol>> GetUserPermission(Guid userId)
         {
-            return await _context.UserPermissions.ToListAsync();
+            return await _context.Roles.Join(_context.UserRoles.Where(x => x.UserId == userId), rol => rol.Id, rolUser => rolUser.RoleId, (rol, rolUser) => rol).ToListAsync();
         }
 
-        public async Task<IEnumerable<User>> GetUsers()
+        public async Task<IEnumerable<UserApp>> GetUsers()
         {
             return await _context.Users.ToListAsync();
         }
 
-        public async Task SetUserPermission(IEnumerable<UserPermission> permissions)
+        public async Task SetUserPermission(IEnumerable<UserRol> permissions)
         {
-            _context.UserPermissions.UpdateRange(permissions);
-            await _context.SaveChangesAsync();            
+            throw new NotImplementedException();
         }
 
-        public async Task<User> UpdateUser(User user)
+        public async Task<UserApp> UpdateUser(UserApp user)
         {
             var ret = _context.Users.Update(user);
             await _context.SaveChangesAsync();

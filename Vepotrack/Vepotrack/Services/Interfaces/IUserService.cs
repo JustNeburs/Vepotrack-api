@@ -11,5 +11,6 @@ namespace Vepotrack.API.Services.Interfaces
         Task<IEnumerable<UserAPI>> GetAPIUsers();
         Task<UserAPI> GetAPIUser(String username);
         Task<String> Authenticate(LoginRequest loginInfo);
+        Task<String> RefreshToken();
     }
 }

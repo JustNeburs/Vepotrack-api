@@ -5,8 +5,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Vepotrack.API.DataModels;
 using Vepotrack.API.Models;
 using Vepotrack.API.Services.Interfaces;
 
@@ -21,16 +23,15 @@ namespace Vepotrack.Controllers
     [ApiController]
     public class LoginController : ControllerBase
     {
-        private readonly IConfiguration _configuration;
         private readonly IUserService _userService;
 
-        public LoginController(IConfiguration configuration,IUserService userService)
-        {
-            _configuration = configuration;
+        public LoginController(IUserService userService)
+        {        
             _userService = userService;
         }
 
         [HttpGet]
+        [AllowAnonymous]
         [Route("ping")]
         public ActionResult EchoPing()
         {
@@ -39,6 +40,7 @@ namespace Vepotrack.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [Route("authenticate")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -57,5 +59,19 @@ namespace Vepotrack.Controllers
             return Unauthorized();
             
         }
+
+        [Authorize]
+        [HttpPost]
+        [Route("refreshtoken")]
+        public async Task<IActionResult> RefreshToken()
+        {
+            var token = await _userService.RefreshToken();
+            if (!String.IsNullOrEmpty(token))
+                return Ok(token);
+            // Si el token no viene relleno no esta autorizado
+            return Unauthorized();
+
+        }
+
     }
 }
