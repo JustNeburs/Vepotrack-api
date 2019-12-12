@@ -15,6 +15,11 @@ namespace Vepotrack.API.Persistence.Contexts
     /// </summary>
     public class ApiDbContext : IdentityDbContext<UserApp, UserRol, Guid>
     {
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<Vehicle> Vehicles { get; set; }
+        public DbSet<OrderChanges> OrderChanges { get; set; }
+        public DbSet<VehiclePosition> VehiclePositions { get; set; }
+
         public ApiDbContext(DbContextOptions<ApiDbContext> options) : base(options)
         {
         }
@@ -22,40 +27,80 @@ namespace Vepotrack.API.Persistence.Contexts
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-                        
-            // Creamos los roles
-            this.Roles.Add(new UserRol
+
+            builder.Entity<Order>().ToTable("Orders");
+            builder.Entity<Order>().HasKey(p => p.Id);
+            builder.Entity<Order>().Property(p => p.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<Order>().Property(p => p.Reference).IsRequired();
+            builder.Entity<Order>().Property(p => p.Created).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<Order>().Property(p => p.Status).IsRequired();
+            builder.Entity<Order>().HasMany(p => p.OrderChanges).WithOne(p => p.Order).HasForeignKey(p => p.OrderId);
+            builder.Entity<Order>().HasOne(p => p.User).WithMany(p => p.Orders).HasForeignKey(p => p.UserId);
+            builder.Entity<Order>().HasOne(p => p.Vehicle).WithMany(p => p.Orders);
+
+            builder.Entity<OrderChanges>().ToTable("OrderChanges");
+            builder.Entity<OrderChanges>().HasKey(p => p.Id);
+            builder.Entity<OrderChanges>().Property(p => p.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<OrderChanges>().Property(p => p.OrderId).IsRequired();
+            builder.Entity<OrderChanges>().Property(p => p.ChangeId).IsRequired();
+            builder.Entity<OrderChanges>().Property(p => p.ChangeDate).IsRequired();
+            builder.Entity<OrderChanges>().Property(p => p.FieldChange).IsRequired();
+            builder.Entity<OrderChanges>().Property(p => p.OldValue).IsRequired();
+            builder.Entity<OrderChanges>().Property(p => p.UserChange).IsRequired();
+        }
+
+        /// <summary>
+        /// Creamos los roles por defecto cheuqueando primero si existe
+        /// </summary>
+        /// <param name="roleManager"></param>
+        internal static void SeedRoles ( RoleManager<UserRol> roleManager)
+        {
+            if (!roleManager.RoleExistsAsync(UserRol.AdminRol).Result)
             {
-                Name = "User"
-            });
-            this.Roles.Add(new UserRol
+                UserRol role = new UserRol();
+                role.Name = UserRol.AdminRol;
+                roleManager.CreateAsync(role);
+            }
+
+            if (!roleManager.RoleExistsAsync(UserRol.VehicleRol).Result)
             {
-                Name = "Admin"
-            });
+                UserRol role = new UserRol();
+                role.Name = UserRol.VehicleRol;
+                roleManager.CreateAsync(role);
+            }
 
-            SaveChanges();
+            if (!roleManager.RoleExistsAsync(UserRol.RegularRol).Result)
+            {
+                UserRol role = new UserRol();
+                role.Name = UserRol.RegularRol;
+                roleManager.CreateAsync(role);
+            }
+        }
 
-            //Inicializamos la BD con el usuario Admin, con password 123456
-            Guid idAdmin = Guid.NewGuid();
+        /// <summary>
+        /// Creamos los usuarios por defecto chequeando previamente si existen
+        /// </summary>
+        /// <param name="userManager"></param>
+        internal static void SeedUser(UserManager<UserApp> userManager)
+        {
+            //Creamos el usuario admin por defecto
+            if (userManager.FindByNameAsync("Admin").Result == null)
+            {
+                UserApp user = new UserApp();
+                user.UserName = "Admin";
+                IdentityResult result = userManager.CreateAsync (user, "Ad.123456").Result;
 
-            //var userStore = new UserStore<UserApp>(this);
-            //var user = new UserApp
-            //{
-            //    UserName = "Admin",
-            //    PasswordHash = userManager.PasswordHasher.HashPassword("123456"),
-            //    LockoutEnabled = true,
-            //};
-            //userManager.Create(user);
-            //userManager.AddToRole(user.Id, "Admin");
-            //var userAdmin = new UserApp
-            //{
-            //    Id = idAdmin,
-            //    UserName = "Admin",
-            //    BackHash = "_back",
-            //    PasswordHash = "07A9FD54218BC62F6D16FBED0E45064429B202FD7A3BCE0135C11C90812225F9AC0F965E6BBAF133C4A81EB6D480939E8E8A46D5DB620BF92E1A9FEEC7528F18"
-            //};
+                if (result.Succeeded)
+                {
+                    userManager.AddToRoleAsync(user,UserRol.AdminRol).Wait();
+                }
+            }
+        }
 
-           
+        internal static void SeedData(UserManager<UserApp> userManager,RoleManager<UserRol> roleManager)
+        {
+            SeedRoles(roleManager);
+            SeedUser(userManager);
         }
 
     }

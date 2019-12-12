@@ -20,10 +20,11 @@ namespace Vepotrack.API.DataModels
         /// <summary>
         /// Ultimo login del usuario
         /// </summary>
-        public DateTime? LastLogin { get; set; }
-        /// <summary>
-        /// Identifica si el usuario es administrador
-        /// </summary>
-        public bool IsAdmin { get; set; }
+        public DateTime? LastLogin { get; set; }               
+
+
+        public virtual List<Order> Orders { get; set; }
+        public virtual List<OrderChanges> OrderChanges { get; set; }
+        public virtual Vehicle Vehicle { get; set; }
     }
 }

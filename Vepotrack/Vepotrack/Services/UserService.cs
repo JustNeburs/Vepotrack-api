@@ -18,7 +18,7 @@ using Vepotrack.API.Utils;
 
 namespace Vepotrack.API.Services
 {
-    public class UserService : IUserService
+    public class UserService : BaseService, IUserService
     {
         /// <summary>
         /// Servicio de sesion
@@ -27,11 +27,7 @@ namespace Vepotrack.API.Services
         /// <summary>
         /// Manager de usuarios
         /// </summary>
-        private readonly UserManager<UserApp> _userManager;
-        /// <summary>
-        /// Acceso al contexto
-        /// </summary>
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly UserManager<UserApp> _userManager;        
         /// <summary>
         /// Variable donde se establecera el repositorio de usuarios
         /// </summary>
@@ -50,11 +46,10 @@ namespace Vepotrack.API.Services
             SignInManager<UserApp> signInManager, 
             IUserRepository userRepository,
             IHttpContextAccessor httpContextAccessor,
-            ILogger<UserService> logger)
+            ILogger<UserService> logger): base(httpContextAccessor)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _httpContextAccessor = httpContextAccessor;
             _userRepository = userRepository;
             _configuration = configuration;
             _logger = logger;
@@ -92,23 +87,67 @@ namespace Vepotrack.API.Services
         public async Task<String> RefreshToken()
         {
             // Buscamos el usuario por nombre
-            var user = await _userManager.FindByNameAsync(
-               _httpContextAccessor.HttpContext.User.Identity.Name ??
-               _httpContextAccessor.HttpContext.User.Claims.Where(c => c.Properties.ContainsKey("unique_name")).Select(c => c.Value).FirstOrDefault()
-               );
+            var user = await GetUser();
             return GetToken(user);
         }
 
         public async Task<UserAPI> GetAPIUser(string username)
         {
+            // Si es un usuario normal no podrá buscar el usuario
+            if (IsRegularUser())
+                return null;
+
             var user = await _userManager.FindByNameAsync(username);
             return user?.ToUserAPI();
         }
 
         public async Task<IEnumerable<UserAPI>> GetAPIUsers()
         {
-            // Convertimos a UserAPI
-            return _userManager.Users.Select(x => x.ToUserAPI()).ToList();
+             // Si es un usuario normal solo obtendrá su usuario
+            if (IsRegularUser())
+            {
+                // Obtenemos el usuario actual
+                var user = await GetUser();
+
+                return new List<UserAPI>
+                {
+                    user?.ToUserAPI()
+                };
+            }
+            // Según el tipo de usuario obtenemos unos usuarios u otros
+            List<UserApp> lstUsers = new List<UserApp>(await _userManager.GetUsersInRoleAsync(UserRol.RegularRol));
+            lstUsers.AddRange(await _userManager.GetUsersInRoleAsync(UserRol.VehicleRol));
+            if (IsAdmin())
+                lstUsers.AddRange(await _userManager.GetUsersInRoleAsync(UserRol.AdminRol));
+
+            return lstUsers.Select(x => x.ToUserAPI()).ToList();
+        }
+        /// <summary>
+        /// Creación de usuario estandar
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public async Task<UserAPI> CreateUser(UserAPI user)
+        {
+            if (!IsAdmin())
+                return null;
+
+            var internalUser = new UserApp
+            {
+                UserName = user.Username,                
+            };
+
+            var result = await _userManager.CreateAsync(internalUser, user.Password);
+            if (result.Succeeded)
+            {
+                var userAdd = await _userManager.FindByNameAsync(user.Username);
+                if (userAdd != null)
+                    await _userManager.AddToRoleAsync(userAdd, UserRol.RegularRol);
+
+                return userAdd?.ToUserAPI();
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -152,6 +191,18 @@ namespace Vepotrack.API.Services
             var createdToken = tokenHandler.CreateToken(tokenDescriptor);
             // Devolvemos el token generado
             return tokenHandler.WriteToken(createdToken);
+        }
+
+        /// <summary>
+        /// Obtiene el usuario en base al contexto
+        /// </summary>
+        /// <returns></returns>
+        protected async Task<UserApp> GetUser()
+        {
+            return await _userManager.FindByNameAsync(
+               _httpContextAccessor.HttpContext.User.Identity.Name ??
+               _httpContextAccessor.HttpContext.User.Claims.Where(c => c.Properties.ContainsKey("unique_name")).Select(c => c.Value).FirstOrDefault()
+               );
         }
         
     }

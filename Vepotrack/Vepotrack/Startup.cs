@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -74,13 +75,17 @@ namespace Vepotrack.API
 
             services.AddScoped<IUserClaimsPrincipalFactory<UserApp>, AdditionalUserClaimsPrincipalFactory>();
 
-            services.AddSingleton<IAuthorizationHandler, IsAdminHandler>();
             services.AddAuthentication();
+            // Añadimos los'policy' de acceso
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("IsAdmin", policy =>
                 {
-                    policy.Requirements.Add(new IsAdminRequirement());
+                    policy.RequireRole(UserRol.AdminRol);
+                });
+                options.AddPolicy("IsVehicle", policy =>
+                {
+                    policy.RequireRole(UserRol.VehicleRol, UserRol.AdminRol);
                 });
             });
 
@@ -92,7 +97,7 @@ namespace Vepotrack.API
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, UserManager<UserApp> userManager, RoleManager<UserRol> roleManager)
         {
             if (env.IsDevelopment())
             {
@@ -108,6 +113,10 @@ namespace Vepotrack.API
 
             app.UseHttpsRedirection();
             app.UseAuthentication();
+
+            // Inicializamos los datos de usuario y roles
+            ApiDbContext.SeedData(userManager, roleManager);
+
             app.UseMvc();
         }
     }

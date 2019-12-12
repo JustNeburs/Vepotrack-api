@@ -28,17 +28,23 @@ namespace Vepotrack.API.Identity
 
             var claims = new List<Claim>();
             
-            // Asignamos el 'claim' del rol 
-            if (user.IsAdmin)
+            // Asignamos el 'claim' del rol, podriamos asignar más claims según su tipo
+            if (principal.IsInRole(UserRol.AdminRol))
             {
-                claims.Add(new Claim(ClaimTypes.Role, "admin"));
-            }
-            else
-            {
-                claims.Add(new Claim(ClaimTypes.Role, "user"));
+                claims.Add(new Claim(ClaimTypes.Role, UserRol.AdminRol));
             }
 
-            identity.AddClaims(claims);
+            if (principal.IsInRole(UserRol.VehicleRol))
+            {
+                claims.Add(new Claim(ClaimTypes.Role, UserRol.VehicleRol));
+            }
+
+            if (principal.IsInRole(UserRol.RegularRol))
+            {
+                claims.Add(new Claim(ClaimTypes.Role, UserRol.RegularRol));
+            }
+
+            identity.AddClaims(claims);            
             return principal;
         }
     }

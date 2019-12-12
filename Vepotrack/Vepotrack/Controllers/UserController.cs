@@ -22,14 +22,13 @@ namespace Vepotrack.Controllers
             _userService = userService;
         }
 
-
         [HttpGet]
         public async Task<IEnumerable<UserAPI>> Get()
         {
             return await _userService.GetAPIUsers();
         }
 
-        // GET: api/User/{username}
+        [Authorize(Policy = "IsVehicle")]
         [HttpGet("{username}", Name = "Get")]
         public async Task<UserAPI> Get(string username)
         {
@@ -37,21 +36,12 @@ namespace Vepotrack.Controllers
         }
 
         // POST: api/User
+        [Authorize(Policy = "IsAdmin")]
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<UserAPI> Post([FromBody] UserAPI value)
         {
-        }
+            return await _userService.CreateUser(value);
+        }            
 
-        // PUT: api/User/5
-        [HttpPut("{id}")]
-        public void Put(string id, [FromBody] string value)
-        {
-        }
-
-        // DELETE: api/ApiWithActions/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
     }
 }
