@@ -104,7 +104,7 @@ namespace Vepotrack.API.Services
         public async Task<IEnumerable<UserAPI>> GetAPIUsers()
         {
              // Si es un usuario normal solo obtendrá su usuario
-            if (IsRegularUser())
+            if (!IsAdmin() && !IsVehicle())
             {
                 // Obtenemos el usuario actual
                 var user = await GetUser();
@@ -204,6 +204,6 @@ namespace Vepotrack.API.Services
                _httpContextAccessor.HttpContext.User.Claims.Where(c => c.Properties.ContainsKey("unique_name")).Select(c => c.Value).FirstOrDefault()
                );
         }
-        
+
     }
 }

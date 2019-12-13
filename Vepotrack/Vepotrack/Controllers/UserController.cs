@@ -40,6 +40,7 @@ namespace Vepotrack.Controllers
         [HttpPost]
         public async Task<UserAPI> Post([FromBody] UserAPI value)
         {
+            // Solo vamos a permitir crear usuarios regulares desde la API
             return await _userService.CreateUser(value);
         }            
 

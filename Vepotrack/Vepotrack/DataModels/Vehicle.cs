@@ -14,6 +14,11 @@ namespace Vepotrack.API.DataModels
         [Key]
         public Guid Id { get; set; }
         /// <summary>
+        /// Referencia unica del vehiculo
+        /// </summary>
+        [Required]
+        public String Reference { get; set; }
+        /// <summary>
         /// Nombre representativo del vehiculo
         /// </summary>
         [Required]
@@ -35,5 +40,10 @@ namespace Vepotrack.API.DataModels
         /// Pedidos que actualmente tienen una asociación al vehiculo
         /// </summary>
         public virtual List<Order> Orders { get; set; }
+
+        /// No se agrega la propiedad de navegación hacia posiciones del vehiculo
+        /// de forma intencionada, así evitamos que de forma inconsciente intente 
+        /// cargar todas las posicones de un vehiculo que pueden ser muchas y
+        /// ralentizar la carga de datos     
     }
 }

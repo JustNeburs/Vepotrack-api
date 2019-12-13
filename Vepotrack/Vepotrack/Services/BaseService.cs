@@ -41,6 +41,19 @@ namespace Vepotrack.API.Services
         /// <returns></returns>
         protected virtual bool IsRegularUser() => _httpContextAccessor.HttpContext.User.IsInRole("Regular");
 
+        /// <summary>
+        /// Obtenemos el Id Interno del usuario del Claim
+        /// </summary>
+        /// <returns></returns>
+        protected virtual Guid GetUserId()
+        {
+            var claim = _httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(x => x.Type == UserApp.IdentityIdClaim);
+            Guid retId;
+            if (claim == null || !Guid.TryParse(claim.Value, out retId))
+                return Guid.Empty;
+            return retId;
+        }
+
 
 
     }

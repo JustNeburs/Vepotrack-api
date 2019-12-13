@@ -32,11 +32,14 @@ namespace Vepotrack.API.Persistence.Contexts
             builder.Entity<Order>().HasKey(p => p.Id);
             builder.Entity<Order>().Property(p => p.Id).IsRequired().ValueGeneratedOnAdd();
             builder.Entity<Order>().Property(p => p.Reference).IsRequired();
+            builder.Entity<Order>().HasIndex(p => p.Reference).IsUnique();
+            builder.Entity<Order>().Property(p => p.ReferenceUniqueAccess).IsRequired();
+            builder.Entity<Order>().HasIndex(p => p.ReferenceUniqueAccess).IsUnique();
             builder.Entity<Order>().Property(p => p.Created).IsRequired().ValueGeneratedOnAdd();
             builder.Entity<Order>().Property(p => p.Status).IsRequired();
             builder.Entity<Order>().HasMany(p => p.OrderChanges).WithOne(p => p.Order).HasForeignKey(p => p.OrderId);
             builder.Entity<Order>().HasOne(p => p.User).WithMany(p => p.Orders).HasForeignKey(p => p.UserId);
-            builder.Entity<Order>().HasOne(p => p.Vehicle).WithMany(p => p.Orders);
+            builder.Entity<Order>().HasOne(p => p.Vehicle).WithMany(p => p.Orders).HasForeignKey(p => p.VehicleId);
 
             builder.Entity<OrderChanges>().ToTable("OrderChanges");
             builder.Entity<OrderChanges>().HasKey(p => p.Id);
@@ -47,6 +50,24 @@ namespace Vepotrack.API.Persistence.Contexts
             builder.Entity<OrderChanges>().Property(p => p.FieldChange).IsRequired();
             builder.Entity<OrderChanges>().Property(p => p.OldValue).IsRequired();
             builder.Entity<OrderChanges>().Property(p => p.UserChange).IsRequired();
+
+            builder.Entity<Vehicle>().ToTable("Vehicles");
+            builder.Entity<Vehicle>().HasKey(p => p.Id);
+            builder.Entity<Vehicle>().Property(p => p.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<Vehicle>().Property(p => p.Reference).IsRequired();
+            builder.Entity<Vehicle>().HasIndex(p => p.Reference).IsUnique();
+            builder.Entity<Vehicle>().Property(p => p.Name).IsRequired();
+            builder.Entity<Vehicle>().HasOne(p => p.User).WithOne(p => p.Vehicle);
+
+            builder.Entity<VehiclePosition>().ToTable("VehiclePositions");
+            builder.Entity<VehiclePosition>().HasKey(p => p.Id);
+            builder.Entity<VehiclePosition>().Property(p => p.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<VehiclePosition>().Property(p => p.VehicleId).IsRequired();
+            builder.Entity<VehiclePosition>().Property(p => p.SetDate).IsRequired();
+            builder.Entity<VehiclePosition>().Property(p => p.Latitude).IsRequired();
+            builder.Entity<VehiclePosition>().Property(p => p.Longitude).IsRequired();
+            builder.Entity<VehiclePosition>().Property(p => p.Precision).IsRequired();
+            builder.Entity<VehiclePosition>().HasOne(p => p.Vehicle).WithMany();
         }
 
         /// <summary>
@@ -55,24 +76,33 @@ namespace Vepotrack.API.Persistence.Contexts
         /// <param name="roleManager"></param>
         internal static void SeedRoles ( RoleManager<UserRol> roleManager)
         {
+            // Creamos el rol de administrador si no existe
             if (!roleManager.RoleExistsAsync(UserRol.AdminRol).Result)
             {
-                UserRol role = new UserRol();
-                role.Name = UserRol.AdminRol;
+                UserRol role = new UserRol
+                {
+                    Name = UserRol.AdminRol
+                };
                 roleManager.CreateAsync(role);
             }
 
+            // Creamos el rol de Usuario de vehiculo si no existe
             if (!roleManager.RoleExistsAsync(UserRol.VehicleRol).Result)
             {
-                UserRol role = new UserRol();
-                role.Name = UserRol.VehicleRol;
+                UserRol role = new UserRol
+                {
+                    Name = UserRol.VehicleRol
+                };
                 roleManager.CreateAsync(role);
             }
 
+            // Creamos el rol de usuario regular si no existe
             if (!roleManager.RoleExistsAsync(UserRol.RegularRol).Result)
             {
-                UserRol role = new UserRol();
-                role.Name = UserRol.RegularRol;
+                UserRol role = new UserRol
+                {
+                    Name = UserRol.RegularRol
+                };
                 roleManager.CreateAsync(role);
             }
         }
@@ -93,6 +123,32 @@ namespace Vepotrack.API.Persistence.Contexts
                 if (result.Succeeded)
                 {
                     userManager.AddToRoleAsync(user,UserRol.AdminRol).Wait();
+                }
+            }
+
+            //Creamos un usuario de vehiculo por defecto
+            if (userManager.FindByNameAsync("Vehicle01").Result == null)
+            {
+                UserApp user = new UserApp();
+                user.UserName = "Vehicle01";
+                IdentityResult result = userManager.CreateAsync(user, "Ve.123456").Result;
+
+                if (result.Succeeded)
+                {
+                    userManager.AddToRoleAsync(user, UserRol.VehicleRol).Wait();
+                }
+            }
+
+            //Creamos un usuario regular por defecto
+            if (userManager.FindByNameAsync("Regular01").Result == null)
+            {
+                UserApp user = new UserApp();
+                user.UserName = "Regular01";
+                IdentityResult result = userManager.CreateAsync(user, "Re.123456").Result;
+
+                if (result.Succeeded)
+                {
+                    userManager.AddToRoleAsync(user, UserRol.RegularRol).Wait();
                 }
             }
         }

@@ -88,9 +88,13 @@ namespace Vepotrack.API
                     policy.RequireRole(UserRol.VehicleRol, UserRol.AdminRol);
                 });
             });
-
+            // Repositorios
             services.AddScoped<IUserRepository, UserRepository>();
+            // Servicios
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<IVehicleService, VehicleService>();
+
             // Singleton de acceso al contexto
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 

@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace Vepotrack.API.Models
 {
+    /// <summary>
+    /// Clase para las peticiones de login
+    /// </summary>
     public class LoginRequest
     {
         public string Username { get; set; }

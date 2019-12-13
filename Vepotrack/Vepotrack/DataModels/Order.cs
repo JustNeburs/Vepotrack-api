@@ -51,10 +51,15 @@ namespace Vepotrack.API.DataModels
         [Key]
         public Guid Id { get; set; }
         /// <summary>
-        /// Referencia del pedido
+        /// Referencia unica del pedido para acceso exterior
         /// </summary>
         [Required]
         public String Reference { get; set; }
+        /// <summary>
+        /// Referencia Unica para Acceso al pedido sin necesidad de login
+        /// </summary>
+        [Required]
+        public String ReferenceUniqueAccess { get; set; }
         /// <summary>
         /// Fecha de creación en el sistema
         /// </summary>

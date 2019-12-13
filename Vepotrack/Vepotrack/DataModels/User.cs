@@ -14,6 +14,11 @@ namespace Vepotrack.API.DataModels
     public class UserApp : IdentityUser<Guid>
     {
         /// <summary>
+        /// Establecemos el tipo del Claim para el Id Interno
+        /// </summary>
+        public const String IdentityIdClaim = "InternalId";
+
+        /// <summary>
         /// Elemento a añadir al hash de la contraseña antes de generarlo
         /// </summary>
         public String BackHash { get; set; }

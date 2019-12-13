@@ -44,6 +44,9 @@ namespace Vepotrack.API.Identity
                 claims.Add(new Claim(ClaimTypes.Role, UserRol.RegularRol));
             }
 
+            // Guardamos en un claim el UserId
+            claims.Add(new Claim(UserApp.IdentityIdClaim, user.Id.ToString()));
+
             identity.AddClaims(claims);            
             return principal;
         }

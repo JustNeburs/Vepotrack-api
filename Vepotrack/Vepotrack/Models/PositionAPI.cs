@@ -1,27 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Vepotrack.API.DataModels;
 
-namespace Vepotrack.API.DataModels
+namespace Vepotrack.API.Models
 {
-    public class VehiclePosition
+    public class PositionAPI
     {
-        /// <summary>
-        /// Id interno generado
-        /// </summary>
-        [Key]
-        public Guid Id { get; set; }
-        /// <summary>
-        /// Vehiculo de esta posición
-        /// </summary>
-        [Required]
-        public Guid VehicleId { get; set; }
+        public PositionAPI()
+        {
+
+        }
+
+        public PositionAPI(VehiclePosition position):this()
+        {
+            if (position == null)
+                return;
+            SetDate = position.SetDate;
+            PositionFormat = position.PositionFormat;
+            Latitude = position.Latitude;
+            Longitude = position.Longitude;
+            Precision = position.Precision;
+            ExtendedInfo = position.ExtendedInfo;
+        }
+
         /// <summary>
         /// Fecha/hora de captura
         /// </summary>
-        [Required]
         public DateTime SetDate { get; set; }
         /// <summary>
         /// Tipo de posición, se pone cadena para dejar abierta la ampliación (Latitud|Longitud, Posición en GMaps, ...)
@@ -30,27 +36,18 @@ namespace Vepotrack.API.DataModels
         /// <summary>
         /// Latitud de la posición
         /// </summary>
-        [Required]
         public Decimal Latitude { get; set; }
         /// <summary>
         /// Longitud de la posición
         /// </summary>
-        [Required]
         public Decimal Longitude { get; set; }
         /// <summary>
         /// Precision en metros
         /// </summary>
-        [Required]
         public Decimal Precision { get; set; }
         /// <summary>
         /// Información extendida/auxiliar de esta posición.
         /// </summary>
         public String ExtendedInfo { get; set; }
-
-        /// <summary>
-        /// Objeto que indica el vehículo de esta posición
-        /// </summary>
-        public virtual Vehicle Vehicle { get; set; }
-
     }
 }
