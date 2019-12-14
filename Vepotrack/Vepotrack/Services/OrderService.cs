@@ -27,11 +27,15 @@ namespace Vepotrack.API.Services
             _orderRepository = orderRepository;
             _vehicleRepository = vehicleRepository;
         }
-
+        /// <summary>
+        /// Añade un pedido
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public async Task<bool> AddOrder(OrderDataAPI value)
         {
             // Si no tenemos asociada la referencia no es correcto
-            if (String.IsNullOrEmpty(value?.Reference))
+            if (String.IsNullOrEmpty(value?.Reference) || (!IsAdmin() && !IsVehicle()))
                 return false;
             // Si existe un pedido con esa referencia devolvemos un fallo
             if (await _orderRepository.Find(value.Reference, value.ReferenceUniqueAccess) != null)
@@ -42,20 +46,30 @@ namespace Vepotrack.API.Services
             // Creamos el pedido
             return await _orderRepository.AddOrder(value);
         }
-
+        /// <summary>
+        /// Actualiza el pedido
+        /// </summary>
+        /// <param name="reference"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public async Task<bool> UpdateOrder(String reference, OrderDataAPI value)
         {
             // Si no tenemos asociada la referencia no es correcto
-            if (String.IsNullOrEmpty(reference) || String.IsNullOrEmpty(value?.Reference))
+            if (String.IsNullOrEmpty(reference) || String.IsNullOrEmpty(value?.Reference) || (!IsAdmin() && !IsVehicle()))
                 return false;
             // Creamos el pedido
             return await _orderRepository.UpdateOrder(reference, value);
         }
-
+        /// <summary>
+        /// Asigna el pedido al vehiculo indicados
+        /// </summary>
+        /// <param name="referenceOrder"></param>
+        /// <param name="referenceVehicle"></param>
+        /// <returns></returns>
         public async Task<bool> AssignOrderVehicle(string referenceOrder, string referenceVehicle)
         {
             // Si no tenemos asociada la referencia no es correcto
-            if (String.IsNullOrEmpty(referenceOrder) || String.IsNullOrEmpty(referenceVehicle))
+            if (String.IsNullOrEmpty(referenceOrder) || String.IsNullOrEmpty(referenceVehicle) || (!IsAdmin() && !IsVehicle()))
                 return false;
 
             var order = await _orderRepository.Find(referenceOrder);
@@ -71,16 +85,32 @@ namespace Vepotrack.API.Services
             return await _orderRepository.Assign(referenceOrder, referenceVehicle);
         }
 
+        /// <summary>
+        /// Obtiene el pedido dada la referencia
+        /// </summary>
+        /// <param name="reference"></param>
+        /// <returns></returns>
         public async Task<OrderAPI> GetOrder(string reference)
         {
+            // Obtenemos el pedido
             var order = await _orderRepository.Find(reference);
+            if (order == null)
+                return null;
+            // Si no es administrador o vehiculo no puede ver los pedidos, solo puede ver los suyos
+            if (!IsAdmin() && !IsVehicle() && order.UserId != GetUserId())
+                return null;
+            // Asiganmos la ultima posición del vehiculo del pedido
             VehiclePosition position = null;
             if (order?.VehicleId != null)
                 position = await _vehicleRepository.GetLastPosition(order.VehicleId);
 
             return order?.ToOrderAPI(position);
         }
-
+        /// <summary>
+        /// Obtiene el pedido dada la referencia unica
+        /// </summary>
+        /// <param name="uniqueReference"></param>
+        /// <returns></returns>
         public async Task<OrderAPI> GetOrderUniqueReference(string uniqueReference)
         {
             var order = await _orderRepository.Find(null, uniqueReference);

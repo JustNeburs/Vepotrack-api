@@ -2,45 +2,65 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Vepotrack.API.Models;
+using Vepotrack.API.Services.Interfaces;
 
 namespace Vepotrack.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class VehicleController : ControllerBase
     {
+        private IVehicleService _vehicleService;
+
+        public VehicleController(IVehicleService vehicleService)
+        {
+            _vehicleService = vehicleService;
+        }
+
         // GET: api/Vehicle
         [HttpGet]
-        public IEnumerable<string> Get()
+        public async Task<IEnumerable<VehicleAPI>> Get()
         {
-            return new string[] { "value1", "value2" };
+            return await _vehicleService.GetList();
         }
 
         // GET: api/Vehicle/5
-        [HttpGet("{id}", Name = "Get")]
-        public string Get(int id)
+        [HttpGet("{reference}", Name = "Get")]
+        public async Task<VehicleAPI> Get(string reference)
         {
-            return "value";
+            return await _vehicleService.GetVehicle(reference);
         }
 
         // POST: api/Vehicle
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<IActionResult> Post([FromBody] VehicleAPI value)
         {
+            return await _vehicleService.AddVehicle(value);
         }
 
         // PUT: api/Vehicle/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPut("{reference}")]
+        public async Task<IActionResult> Put(string reference, [FromBody] VehicleAPI value)
         {
+            return await _vehicleService.UpdateVehicle(reference, value);
         }
 
-        // DELETE: api/ApiWithActions/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        // POST: api/Vehicle
+        [HttpPost("position/{reference}")]
+        public async Task<IActionResult> SetVehiclePosition(string reference, [FromBody] PositionAPI value)
         {
+            return await _vehicleService.AddVehiclePosition(reference, value);
+        }
+        // GET: api/Vehicle/5
+        [HttpGet("today/{reference}", Name = "Get")]
+        public async Task<IEnumerable<PositionAPI>> Today(string reference)
+        {
+            return await _vehicleService.GetVehiclePositions(DateTime.Now.Date);
         }
     }
 }
