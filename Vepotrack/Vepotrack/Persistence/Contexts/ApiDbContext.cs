@@ -74,7 +74,7 @@ namespace Vepotrack.API.Persistence.Contexts
         /// Creamos los roles por defecto cheuqueando primero si existe
         /// </summary>
         /// <param name="roleManager"></param>
-        internal static void SeedRoles ( RoleManager<UserRol> roleManager)
+        public static void SeedRoles ( RoleManager<UserRol> roleManager)
         {
             // Creamos el rol de administrador si no existe
             if (!roleManager.RoleExistsAsync(UserRol.AdminRol).Result)
@@ -111,7 +111,7 @@ namespace Vepotrack.API.Persistence.Contexts
         /// Creamos los usuarios por defecto chequeando previamente si existen
         /// </summary>
         /// <param name="userManager"></param>
-        internal static void SeedUser(UserManager<UserApp> userManager)
+        public static void SeedUser(UserManager<UserApp> userManager)
         {
             //Creamos el usuario admin por defecto
             if (userManager.FindByNameAsync("Admin").Result == null)
@@ -156,7 +156,7 @@ namespace Vepotrack.API.Persistence.Contexts
             }
         }
 
-        internal static void SeedData(UserManager<UserApp> userManager,RoleManager<UserRol> roleManager)
+        public static void SeedData(UserManager<UserApp> userManager,RoleManager<UserRol> roleManager)
         {
             SeedRoles(roleManager);
             SeedUser(userManager);

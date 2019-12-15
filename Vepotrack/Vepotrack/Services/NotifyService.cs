@@ -64,6 +64,10 @@ namespace Vepotrack.API.Services
             // Si es de tipo Webhook y si no viene la url de envio o no esta bien formada no añadimos nada
             if (notifyType == NotifyType.Webhook && (!String.IsNullOrEmpty(destiny) || !Uri.IsWellFormedUriString(destiny, UriKind.RelativeOrAbsolute)))
                 return false;
+            // Si no tenemos la factoria no podemos añadir notificaciones
+            if (_serviceScopeFactory == null)
+                return false;
+
             using (var scope = _serviceScopeFactory.CreateScope())
             {
                 var orderRepo = scope.ServiceProvider.GetService<IOrderRepository>();
