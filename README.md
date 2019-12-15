@@ -19,9 +19,11 @@ Esta API es una prueba para ver que funciones serían necesarias para permitir t
 + Para pruebas se ha generado una colección de Postman y algunas pruebas unitarias. 
 ## Login
 > /api/login/authenticate
+
 Se ha incluido una autenticación para obtener un token para permitir acceder al resto de opciones.  
 ## Pedidos
 > /api/order
+
 Los pedidos tienen una Referencia para acceder a ellos y una Referencia Única de Acceso para permitir acceder a su estado sin tener que hacer login en el sistema. 
 ### Creación
 Para crear pedidos tendremos que indicar al menos, la referencia y referencia única. 
@@ -45,6 +47,7 @@ Cuando se obtiene un pedido (pasando la referencia) se obtendrán los datos del 
 
 ## Vehículos
 > /api/vehicle
+
 Los vehículos tienen un referencia que debe ser única. Además de permitir crear, actualizar, listar y obtener vehículos, se puede indicar la última posición de un vehículo así como obtener las posiciones de hoy de un vehículo indicado.
 ### Creación
 Para la creación de un vehículo (solo administrador) se ha de indicar la referencia de este, un nombre representativo y la matrícula. 
@@ -57,13 +60,21 @@ Cuando se obtiene un vehículo se obtendrá la referencia, el nombre, matrícula
 Se permite listar las posiciones de un vehículo pasando la referncia de este. Solo se ha publicado un servicio web para obtener las del día de hoy pero ya esta preparado para obtenr un listado de posiciones entre fechas y paginado. 
 
 # Ampliaciones
-Se ha incluido servicios web para la notificación de posiciones, se dará la posibilidad de notificar por Webhook como por MQTT, aunque este último solo esta planteado. Todas las notificaciones tienen una expiración que habrá que renovar, para un usuario regular, si se apunta a una notificación a los 5 minutos dejará de recibir las notificaciones, para un vehículo dejará de recibirlas pasado medio día y para un administrador pasado 1 día completo.
+Se ha incluido servicios web para la notificación de posiciones, se dará la posibilidad de notificar tanto por Webhook como por MQTT, aunque este último solo esta planteado y preparado para instalar el cliente. 
+Todas las notificaciones tienen una fecha de expiración que habrá que renovar, para un usuario regular, si se apunta a una notificación a los 5 minutos dejará de recibir las notificaciones, para un vehículo dejará de recibirlas pasado medio día y para un administrador pasado 1 día completo.
+
 ## Webhook
 > /order/notify/webhook/{referenceOrder}
+
 Permitirá añadir una notificación por Webhook, debiendo pasar en el body la URL a notificar. 
+
 ## MQTT
 > /order/notify/mqtt/{referenceOrder}
+
 ### Funcionamiento actual 
-Permitirá añadir una notificación por MQTT la cual actualmente no hará nada
+
+Permitirá añadir una notificación por MQTT la cual, actualmente, no notificará nada. 
+
 ### Planteamiento
+
 Se deberá configurar el servidor de MQTT y se notificará a una cola para el usuario que la pida y el vehículo indicado ../UserName/ReferenceVehicle 
