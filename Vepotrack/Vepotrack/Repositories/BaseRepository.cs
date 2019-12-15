@@ -16,6 +16,7 @@ namespace Vepotrack.API.Repositories
         /// Contexto para los repositorios
         /// </summary>
         protected readonly ApiDbContext _context;
+        
 
         public BaseRepository(ApiDbContext context)
         {

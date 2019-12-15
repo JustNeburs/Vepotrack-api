@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,8 +12,15 @@ namespace Vepotrack.API.Repositories
 {
     public class UserRepository : BaseRepository, IUserRepository
     {
-        public UserRepository(ApiDbContext context) : base(context)
+        /// <summary>
+        /// Logger
+        /// </summary>
+        private readonly ILogger<UserRepository> _logger;
+
+        public UserRepository(ApiDbContext context,
+            ILogger<UserRepository> logger) : base(context)
         {
+            _logger = logger;
         }
 
         public async Task<UserApp> AddUser(UserApp user)

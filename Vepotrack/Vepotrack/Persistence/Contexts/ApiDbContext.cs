@@ -118,6 +118,7 @@ namespace Vepotrack.API.Persistence.Contexts
             {
                 UserApp user = new UserApp();
                 user.UserName = "Admin";
+                user.Name = "Admin";
                 IdentityResult result = userManager.CreateAsync (user, "Ad.123456").Result;
 
                 if (result.Succeeded)
@@ -131,6 +132,7 @@ namespace Vepotrack.API.Persistence.Contexts
             {
                 UserApp user = new UserApp();
                 user.UserName = "Vehicle01";
+                user.Name = "Vehículo 01";
                 IdentityResult result = userManager.CreateAsync(user, "Ve.123456").Result;
 
                 if (result.Succeeded)
@@ -144,6 +146,7 @@ namespace Vepotrack.API.Persistence.Contexts
             {
                 UserApp user = new UserApp();
                 user.UserName = "Regular01";
+                user.Name = "Usuario Regular 01";
                 IdentityResult result = userManager.CreateAsync(user, "Re.123456").Result;
 
                 if (result.Succeeded)

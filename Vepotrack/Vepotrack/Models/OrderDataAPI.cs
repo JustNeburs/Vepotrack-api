@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Vepotrack.API.DataModels;
 
 namespace Vepotrack.API.Models
 {
@@ -24,5 +25,14 @@ namespace Vepotrack.API.Models
         /// Dirección del pedido
         /// </summary>
         public String Address { get; set; }
+        /// <summary>
+        /// Estado del pedido
+        /// </summary>
+        public OrderStatus Status { get; set; }
+        /// <summary>
+        /// Nombre del usuario asociado al pedido, Nullable para permitir meter pedidos sin necesidad de que el usuario este dado de alta en el sistema
+        /// </summary>
+        public String UserName { get; set; }
+
     }
 }

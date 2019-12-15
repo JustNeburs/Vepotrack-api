@@ -23,6 +23,7 @@ namespace Vepotrack.Controllers
         }
 
         // GET: api/Vehicle
+        [Authorize(Policy = "IsVehicle")]
         [HttpGet]
         public async Task<IEnumerable<VehicleAPI>> Get()
         {
@@ -30,37 +31,61 @@ namespace Vepotrack.Controllers
         }
 
         // GET: api/Vehicle/5
-        [HttpGet("{reference}", Name = "Get")]
+        [Authorize(Policy = "IsVehicle")]
+        [HttpGet("{reference}")]
         public async Task<VehicleAPI> Get(string reference)
         {
             return await _vehicleService.GetVehicle(reference);
         }
 
         // POST: api/Vehicle
+        [Authorize(Policy = "IsAdmin")]
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] VehicleAPI value)
+        public async Task<IActionResult> Post([FromBody] VehicleDataAPI value)
         {
-            return await _vehicleService.AddVehicle(value);
+            if (value == null)
+                return BadRequest();
+
+            if(!await _vehicleService.AddVehicle(value))
+                return BadRequest();
+            return Ok();
         }
 
         // PUT: api/Vehicle/5
+        [Authorize(Policy = "IsAdmin")]
         [HttpPut("{reference}")]
-        public async Task<IActionResult> Put(string reference, [FromBody] VehicleAPI value)
+        public async Task<IActionResult> Put(string reference, [FromBody] VehicleDataAPI value)
         {
-            return await _vehicleService.UpdateVehicle(reference, value);
+            if (String.IsNullOrEmpty(reference) || value == null)
+                return BadRequest();
+
+            if (!await _vehicleService.UpdateVehicle(reference, value))
+                return BadRequest();
+            return Ok();
         }
 
         // POST: api/Vehicle
+        [Authorize(Policy = "IsVehicle")]
         [HttpPost("position/{reference}")]
         public async Task<IActionResult> SetVehiclePosition(string reference, [FromBody] PositionAPI value)
         {
-            return await _vehicleService.AddVehiclePosition(reference, value);
+            if (String.IsNullOrEmpty(reference) || value == null)
+                return BadRequest();
+
+            if(!await _vehicleService.AddVehiclePosition(reference, value))
+                return BadRequest();
+            return Ok();
         }
+        
         // GET: api/Vehicle/5
-        [HttpGet("today/{reference}", Name = "Get")]
+        [HttpGet("today/{reference}")]
         public async Task<IEnumerable<PositionAPI>> Today(string reference)
         {
-            return await _vehicleService.GetVehiclePositions(DateTime.Now.Date);
+            // Si viene la referencia vacia devolvemos una lista vacia
+            if (String.IsNullOrEmpty(reference))
+                return new List<PositionAPI>();
+
+            return await _vehicleService.GetVehiclePositions(reference, DateTime.Now.Date);
         }
     }
 }

@@ -22,16 +22,17 @@ namespace Vepotrack.API.Utils
             {
                 Id = user.Id.ToString(),
                 Username = user.UserName,
+                Name = user.Name,
                 LastLogin = user.LastLogin
             };
         }
 
         /// <summary>
-        /// Convierte un objeto de pedido de base de datos en un Pedido de API para 
+        /// Convierte un objeto de pedido de base de datos en un Pedido para ser devuelto por la API 
         /// </summary>
         /// <param name="order"></param>
         /// <returns></returns>
-        public static OrderAPI ToOrderAPI(this Order order, VehiclePosition lastPosition)
+        public static OrderAPI ToOrderAPI(this Order order, VehiclePosition lastPosition = null)
         {
             if (order == null)
                 return null;
@@ -45,7 +46,32 @@ namespace Vepotrack.API.Utils
                 LastPosition = lastPosition?.ToPositionAPI()            
             };
         }
+        /// <summary>
+        /// Obtiene el objeto de vehiculo para ser devuelto por la API
+        /// </summary>
+        /// <param name="vehicle"></param>
+        /// <param name="orders"></param>
+        /// <returns></returns>
+        public static VehicleAPI ToVehicleAPI(this Vehicle vehicle, IEnumerable<String> orders = null)
+        {
+            if (vehicle == null)
+                return null;
 
+            return new VehicleAPI
+            {
+                Reference = vehicle.Reference,
+                Name = vehicle.Name,
+                Plate = vehicle.Plate,
+                DriverName = vehicle.User?.Name ?? String.Empty,
+                ActualOrders = orders ?? new List<string>()               
+            };
+        }
+
+        /// <summary>
+        /// Obtiene la respresentación textual del estado de un pedido
+        /// </summary>
+        /// <param name="status"></param>
+        /// <returns></returns>
         public static String ToVisibleText(this OrderStatus status)
         {
             switch(status)
@@ -60,7 +86,11 @@ namespace Vepotrack.API.Utils
                 default: return String.Empty;
             }
         }
-
+        /// <summary>
+        /// Obtenemos el objeto PositionAPI en base a la posición del vehiculo
+        /// </summary>
+        /// <param name="position"></param>
+        /// <returns></returns>
         public static PositionAPI ToPositionAPI(this VehiclePosition position)
         {
             if (position == null)

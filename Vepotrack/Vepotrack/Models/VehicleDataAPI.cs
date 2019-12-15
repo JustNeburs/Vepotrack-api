@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Vepotrack.API.Models
 {
-    public class VehicleAPI
+    public class VehicleDataAPI
     {
         /// <summary>
         /// Referencia unica del vehiculo
@@ -20,13 +20,9 @@ namespace Vepotrack.API.Models
         /// </summary>
         public String Plate { get; set; }
         /// <summary>
-        /// Nombre del usuario asociado al vehiculo
+        /// Usuario asociado al vehiculo, es nullable porque puede que un vehiculo no tenga un usuario asociado actualmente
         /// </summary>
-        public String DriverName { get; set; }
+        public String UserName { get; set; }
 
-        /// <summary>
-        /// Pedidos que actualmente tienen una asociación al vehiculo y cuyo estado es 
-        /// </summary>
-        public IEnumerable<String> ActualOrders { get; set; }
     }
 }

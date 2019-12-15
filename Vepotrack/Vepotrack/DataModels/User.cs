@@ -19,9 +19,9 @@ namespace Vepotrack.API.DataModels
         public const String IdentityIdClaim = "InternalId";
 
         /// <summary>
-        /// Elemento a añadir al hash de la contraseña antes de generarlo
+        /// Nombre del usuario
         /// </summary>
-        public String BackHash { get; set; }
+        public String Name { get; set; }
         /// <summary>
         /// Ultimo login del usuario
         /// </summary>

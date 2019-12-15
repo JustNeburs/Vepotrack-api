@@ -85,16 +85,20 @@ namespace Vepotrack.API
                 });
                 options.AddPolicy("IsVehicle", policy =>
                 {
-                    policy.RequireRole(UserRol.VehicleRol, UserRol.AdminRol);
+                    policy.RequireAssertion(context => context.User.IsInRole(UserRol.AdminRol) || context.User.IsInRole(UserRol.VehicleRol));
                 });
             });
             // Repositorios
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IOrderRepository, OrderRepository>();
+            services.AddScoped<IVehicleRepository, VehicleRepository>();
             // Servicios
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<IVehicleService, VehicleService>();
 
+            // Singleton de notificaciones
+            services.AddSingleton<INotifyService, NotifyService>();
             // Singleton de acceso al contexto
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 

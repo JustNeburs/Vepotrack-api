@@ -7,6 +7,24 @@
 	"item": [
 		{
 			"name": "Ping",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "644c93cd-94ae-4cb7-9fee-8989b7aaa4d0",
+						"exec": [
+							"pm.test(\"Status Ok\", function(){",
+							"   pm.response.to.have.status(200); ",
+							"});",
+							"",
+							"pm.test(\"Not Empty body\", function(){",
+							"   pm.response.responseSize > 0;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "GET",
 				"header": [],
@@ -19,62 +37,6 @@
 						"api",
 						"login",
 						"ping"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Example Values *",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{TOKEN}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{url}}/api/values",
-					"host": [
-						"{{url}}"
-					],
-					"path": [
-						"api",
-						"values"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get Users *",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{TOKEN}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{url}}/api/user",
-					"host": [
-						"{{url}}"
-					],
-					"path": [
-						"api",
-						"user"
 					]
 				}
 			},
@@ -106,7 +68,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"Username\":\"Admin\",\n\t\"Password\":\"123456\"\n}",
+					"raw": "{\n\t\"Username\":\"{{USER}}\",\n\t\"Password\":\"{{PASS}}\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -122,6 +84,606 @@
 						"api",
 						"login",
 						"authenticate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Users *",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "24131870-e847-4906-8e00-54323d8b883d",
+						"exec": [
+							"pm.test(\"Status Ok\", function(){",
+							"   pm.response.to.have.status(200); ",
+							"});",
+							"",
+							"pm.test(\"Not Empty body\", function(){",
+							"   pm.response.responseSize > 0;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/api/user",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Regular User*",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"Username\":\"PruebaUsuario\",\n\t\"Name\":\"Usuario de Prueba Generico\",\n\t\"Password\":\"Up.123456\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/user",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User *",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "24131870-e847-4906-8e00-54323d8b883d",
+						"exec": [
+							"pm.test(\"Status Ok\", function(){",
+							"   pm.response.to.have.status(200); ",
+							"});",
+							"",
+							"pm.test(\"Not Empty body\", function(){",
+							"   pm.response.responseSize > 0;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/api/user/PruebaUsuario",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"user",
+						"PruebaUsuario"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Vehicle Sin Usuario*",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"Reference\":\"Vehiculo01\",\n\t\"Name\":\"Vehículo de Prueba Generico\",\n\t\"Plate\":\"2342BWE\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/vehicle",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"vehicle"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Crear Vehiclle Con Usuario*",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"Reference\":\"Vehiculo02\",\n\t\"Name\":\"Vehículo de Prueba Generico\",\n\t\"Plate\":\"2342BWE\",\n\t\"UserName\":\"Vehicle01\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/vehicle",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"vehicle"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Listar vehiculos*",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{url}}/api/vehicle",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"vehicle"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Listar vehiculo por referencia*",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{url}}/api/vehicle/Vehiculo02",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"vehicle",
+						"Vehiculo02"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Establecer posición vehiculo*",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"Latitude\":-31.23,\n\t\"Longitude\": 2.23,\n\t\"Precision\": 5,\n\t\"ExtendedInfo\":\"Día de lluvia\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/vehicle/position/Vehiculo02",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"vehicle",
+						"position",
+						"Vehiculo02"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Obtener posiciones de hoy de un vehiculo *",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{url}}/api/vehicle/today/Vehiculo02",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"vehicle",
+						"today",
+						"Vehiculo02"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Order sin Username*",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"Reference\":\"Order_01\",\n\t\"ReferenceVehicle\":\"Vehiculo02\",\n\t\"ReferenceUniqueAccess\":\"Order_01_2019_12_14_ABCDEFG\",\n\t\"Address\":\"C/Uno dos tres 123\",\n\t\"Status\":10\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/order",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"order"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Order con Username*",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"Reference\":\"OrderUser_02_\",\n\t\"ReferenceVehicle\":\"Vehiculo02\",\n\t\"ReferenceUniqueAccess\":\"OrderUser_02_2019_12_14_ABCDEFG\",\n\t\"Address\":\"C/Uno dos tres 123\",\n\t\"UserName\": \"Regular01\",\n\t\"Status\":20\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/order",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"order"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Obtener Pedidos *",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"Reference\":\"Order_01\",\n\t\"ReferenceVehicle\":\"Vehiculo02\",\n\t\"ReferenceUniqueAccess\":\"Order_01_2019_12_14_ABCDEFG\",\n\t\"Address\":\"C/Uno dos tres 123\",\n\t\"Status\":1\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/order",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"order"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Obtener Pedido Referencia *",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"Reference\":\"Order_01\",\n\t\"ReferenceVehicle\":\"Vehiculo02\",\n\t\"ReferenceUniqueAccess\":\"Order_01_2019_12_14_ABCDEFG\",\n\t\"Address\":\"C/Uno dos tres 123\",\n\t\"Status\":1\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/order/OrderUser_02_",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"order",
+						"OrderUser_02_"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Asignar pedido a Vehiculo *",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{url}}/api/order/assign/Order_01/Vehiculo02",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"order",
+						"assign",
+						"Order_01",
+						"Vehiculo02"
 					]
 				}
 			},

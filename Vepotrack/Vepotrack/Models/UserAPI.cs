@@ -18,10 +18,15 @@ namespace Vepotrack.API.Models
         [JsonProperty(PropertyName ="Id")]
         public String Id { get; set; }
         /// <summary>
-        /// Nombre de usuario
+        /// Login
         /// </summary>
         [JsonProperty(PropertyName = "Username")]
         public String Username { get; set; }
+        /// <summary>
+        /// Nombre de usuario
+        /// </summary>
+        [JsonProperty(PropertyName = "Name")]
+        public String Name { get; set; }
         /// <summary>
         /// Password, solo para establecerlo
         /// </summary>

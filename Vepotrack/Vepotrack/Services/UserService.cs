@@ -134,7 +134,8 @@ namespace Vepotrack.API.Services
 
             var internalUser = new UserApp
             {
-                UserName = user.Username,                
+                UserName = user.Username,
+                Name = user.Name
             };
 
             var result = await _userManager.CreateAsync(internalUser, user.Password);

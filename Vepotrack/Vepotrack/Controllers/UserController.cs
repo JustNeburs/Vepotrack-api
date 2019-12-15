@@ -29,7 +29,7 @@ namespace Vepotrack.Controllers
         }
 
         [Authorize(Policy = "IsVehicle")]
-        [HttpGet("{username}", Name = "Get")]
+        [HttpGet("{username}")]
         public async Task<UserAPI> Get(string username)
         {
             return await _userService.GetAPIUser(username);
@@ -38,10 +38,13 @@ namespace Vepotrack.Controllers
         // POST: api/User
         [Authorize(Policy = "IsAdmin")]
         [HttpPost]
-        public async Task<UserAPI> Post([FromBody] UserAPI value)
+        public async Task<IActionResult> Post([FromBody] UserAPI value)
         {
             // Solo vamos a permitir crear usuarios regulares desde la API
-            return await _userService.CreateUser(value);
+            var ret = await _userService.CreateUser(value);
+            if (ret == null)
+                return BadRequest();
+            return Ok(ret);
         }            
 
     }
