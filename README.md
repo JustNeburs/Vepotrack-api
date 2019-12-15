@@ -17,7 +17,11 @@ Esta API es una prueba para ver que funciones serían necesarias para permitir t
    + **Regular01**: Usuario con rol estadnar y password **Re.123456**
 + Todos los objetos, vehiculos, pedidos, ... tienen un Id interno (*GUID*) pero se obtienen/asignan por una referencia de texto para hacerlos compatibles con otros sistemas.  
 + Para pruebas se ha generado una colección de Postman y algunas pruebas unitarias.
-  + **Postman**: Hay una llamada al Login que automáticamente generará el token y el resto de pruebas ya estan configuradas para usarlo.
+  + **Postman**: Hay una llamada al Login que automáticamente generará el token y el resto de pruebas ya estan configuradas para usarlo. 
+  Las variables de entorno a configurar son:  
+    + *url*: https://localhost:5001
+    + *USER*: Admin
+    + *PASS*: Ad.123456
   + **Pruebas Unitarias**: Solo estan agregadas las pruebas unitarias iniciales por falta de tiempo.
 + Documentación:
   + **Swagger/OpenAPI**: Actualmente no esta disponible pero mi intención era entregar el fichero YAML para la especificación de la API.
